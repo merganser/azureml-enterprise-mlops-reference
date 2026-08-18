@@ -1,0 +1,15 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: train
+display_name: Train classifier
+type: command
+version: 1
+inputs:
+  prepared_data: {type: uri_folder}
+outputs:
+  model: {type: mlflow_model}
+code: ../../../
+environment: azureml://registries/${REGISTRY_NAME}/environments/enterprise-mlops-runtime/versions/${ASSET_VERSION}
+command: >-
+  env PYTHONPATH=src python scripts/train.py
+  --train-csv ${{inputs.prepared_data}}/train.csv
+  --model-dir ${{outputs.model}}

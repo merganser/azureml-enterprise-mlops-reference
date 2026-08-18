@@ -1,0 +1,84 @@
+trigger:
+  branches:
+    include: [main]
+pr:
+  branches:
+    include: [main]
+
+variables:
+  assetVersion: '1.0.$(Build.BuildId)'
+  imageTag: '$(Build.SourceVersion)'
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: TestAndScan
+        pool: {vmImage: ubuntu-latest}
+        steps:
+          - checkout: self
+          - template: templates/install.yml
+          - script: ruff check . && pytest
+            displayName: Lint and unit tests
+          - task: SnykSecurityScan@1
+            displayName: Snyk open-source scan
+            inputs: {serviceConnectionEndpoint: snyk, testType: app, monitorWhen: never, failOnIssues: true}
+          - task: SnykSecurityScan@1
+            displayName: Snyk code scan
+            inputs: {serviceConnectionEndpoint: snyk, testType: code, failOnIssues: true}
+          - script: python -m build
+            displayName: Build Python package
+          - publish: dist
+            artifact: python-package
+
+  - stage: BuildAssets
+    dependsOn: Validate
+    jobs:
+      - job: BuildAndPublish
+        pool: {vmImage: ubuntu-latest}
+        steps:
+          - checkout: self
+          - task: Docker@2
+            displayName: Build runtime image
+            inputs:
+              command: build
+              containerRegistry: $(acrServiceConnection)
+              repository: azureml-enterprise-mlops
+              dockerfile: Dockerfile
+              tags: $(imageTag)
+          - task: SnykSecurityScan@1
+            displayName: Snyk container scan
+            inputs:
+              serviceConnectionEndpoint: snyk
+              testType: container
+              dockerImageName: $(acrLoginServer)/azureml-enterprise-mlops:$(imageTag)
+              dockerfilePath: Dockerfile
+              failOnIssues: true
+          - task: Docker@2
+            displayName: Push approved runtime image
+            inputs:
+              command: push
+              containerRegistry: $(acrServiceConnection)
+              repository: azureml-enterprise-mlops
+              tags: $(imageTag)
+          - template: templates/aml-login.yml
+            parameters: {serviceConnection: $(azureServiceConnection)}
+          - task: AzureCLI@2
+            displayName: Register immutable Azure ML assets
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                python scripts/render_aml.py aml/environment/environment.yml rendered-environment.yml \
+                  CONTAINER_IMAGE=$(acrLoginServer)/azureml-enterprise-mlops:$(imageTag)
+                az ml environment create --file rendered-environment.yml --version $(assetVersion) --registry-name $(amlRegistry)
+                for component in preprocess train evaluate; do
+                  python scripts/render_aml.py aml/components/$component/component.yml rendered-$component.yml \
+                    ASSET_VERSION=$(assetVersion) REGISTRY_NAME=$(amlRegistry)
+                  az ml component create --file rendered-$component.yml --version $(assetVersion) --registry-name $(amlRegistry)
+                done
+          - script: python scripts/create_manifest.py --version $(assetVersion) --commit $(Build.SourceVersion) --image $(acrLoginServer)/azureml-enterprise-mlops:$(imageTag)
+            displayName: Create promotion manifest
+          - publish: promotion-manifest.json
+            artifact: promotion-manifest

@@ -1,0 +1,5 @@
+environment: test
+resource_group: rg-ml-test
+workspace: mlw-test
+compute: cpu-cluster
+endpoint: iris-test

@@ -1,0 +1,24 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: enterprise-mlops-training-${ASSET_VERSION}
+experiment_name: enterprise-mlops-reference
+settings:
+  default_compute: azureml:${COMPUTE_NAME}
+  force_rerun: false
+jobs:
+  preprocess:
+    component: azureml://registries/${REGISTRY_NAME}/components/preprocess/versions/${ASSET_VERSION}
+  train:
+    component: azureml://registries/${REGISTRY_NAME}/components/train/versions/${ASSET_VERSION}
+    inputs:
+      prepared_data: ${{parent.jobs.preprocess.outputs.prepared_data}}
+  evaluate:
+    component: azureml://registries/${REGISTRY_NAME}/components/evaluate/versions/${ASSET_VERSION}
+    inputs:
+      prepared_data: ${{parent.jobs.preprocess.outputs.prepared_data}}
+      model: ${{parent.jobs.train.outputs.model}}
+outputs:
+  trained_model:
+    value: ${{parent.jobs.train.outputs.model}}
+  evaluation_metrics:
+    value: ${{parent.jobs.evaluate.outputs.metrics}}

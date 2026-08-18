@@ -1,0 +1,5 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: enterprise-mlops-runtime
+description: Versioned runtime used by the reference training pipeline and endpoint.
+image: ${CONTAINER_IMAGE}
+conda_file: conda.yml

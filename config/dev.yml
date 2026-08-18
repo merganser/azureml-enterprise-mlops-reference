@@ -1,0 +1,5 @@
+environment: dev
+resource_group: rg-ml-dev
+workspace: mlw-dev
+compute: cpu-cluster
+endpoint: iris-dev

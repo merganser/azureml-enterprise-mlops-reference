@@ -1,0 +1,19 @@
+parameters:
+  pipelineDefinition: AzureML-CI
+steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: Download immutable promotion manifest
+    inputs:
+      buildType: specific
+      project: $(System.TeamProject)
+      definition: ${{ parameters.pipelineDefinition }}
+      buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/main
+      artifactName: promotion-manifest
+      targetPath: $(Pipeline.Workspace)/promotion
+  - bash: |
+      set -euo pipefail
+      manifest="$(Pipeline.Workspace)/promotion/promotion-manifest.json"
+      echo "##vso[task.setvariable variable=assetVersion]$(jq -r .asset_version "$manifest")"
+      echo "##vso[task.setvariable variable=sourceCommit]$(jq -r .source_commit "$manifest")"
+    displayName: Read promotion manifest

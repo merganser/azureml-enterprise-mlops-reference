@@ -1,0 +1,37 @@
+trigger: none
+
+stages:
+  - stage: TrainAndQualify
+    jobs:
+      - deployment: Dev
+        environment: azureml-dev
+        pool: {vmImage: ubuntu-latest}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - template: templates/download-manifest.yml
+                - template: templates/aml-login.yml
+                  parameters: {serviceConnection: $(azureServiceConnectionDev)}
+                - task: AzureCLI@2
+                  displayName: Submit version-pinned training pipeline
+                  inputs:
+                    azureSubscription: $(azureServiceConnectionDev)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      python scripts/render_aml.py aml/pipelines/training.template.yml rendered-training.yml \
+                        ASSET_VERSION=$(assetVersion) REGISTRY_NAME=$(amlRegistry) COMPUTE_NAME=$(devCompute)
+                      job=$(az ml job create --file rendered-training.yml --resource-group $(devResourceGroup) --workspace-name $(devWorkspace) --query name -o tsv)
+                      az ml job stream --name "$job" --resource-group $(devResourceGroup) --workspace-name $(devWorkspace)
+                      az ml job download --name "$job" --all --download-path job-output \
+                        --resource-group $(devResourceGroup) --workspace-name $(devWorkspace)
+                      python scripts/check_metrics.py job-output/named-outputs/evaluation_metrics/metrics.json \
+                        --minimum-accuracy 0.90
+                      az ml model create --name iris-classifier --version $(assetVersion) \
+                        --path job-output/named-outputs/trained_model --type mlflow_model \
+                        --registry-name $(amlRegistry)
+                - publish: $(Pipeline.Workspace)/promotion/promotion-manifest.json
+                  artifact: qualified-manifest

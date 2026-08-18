@@ -1,0 +1,40 @@
+trigger: none
+
+stages:
+  - stage: DeployAndTest
+    jobs:
+      - deployment: Test
+        environment: azureml-test
+        pool: {vmImage: ubuntu-latest}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - template: templates/download-manifest.yml
+                - template: templates/aml-login.yml
+                  parameters: {serviceConnection: $(azureServiceConnectionTest)}
+                - task: AzureCLI@2
+                  displayName: Deploy exact qualified model to Test
+                  inputs:
+                    azureSubscription: $(azureServiceConnectionTest)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      export ENDPOINT_NAME=$(testEndpoint)
+                      envsubst < aml/endpoints/endpoint.yml > rendered-endpoint.yml
+                      python scripts/render_aml.py aml/endpoints/deployment.template.yml rendered-deployment.yml \
+                        ENDPOINT_NAME=$(testEndpoint) REGISTRY_NAME=$(amlRegistry) MODEL_NAME=iris-classifier \
+                        MODEL_VERSION=$(assetVersion) ASSET_VERSION=$(assetVersion)
+                      az ml online-endpoint create --file rendered-endpoint.yml --resource-group $(testResourceGroup) --workspace-name $(testWorkspace) || true
+                      az ml online-deployment create --file rendered-deployment.yml --all-traffic \
+                        --resource-group $(testResourceGroup) --workspace-name $(testWorkspace)
+                - template: templates/install.yml
+                - script: >-
+                    python scripts/smoke_test.py --subscription-id $(subscriptionId)
+                    --resource-group $(testResourceGroup) --workspace $(testWorkspace)
+                    --endpoint $(testEndpoint)
+                  displayName: Smoke test endpoint
+                - publish: test-attestation.json
+                  artifact: test-attestation

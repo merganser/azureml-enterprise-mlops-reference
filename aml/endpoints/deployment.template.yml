@@ -1,0 +1,10 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: blue
+endpoint_name: ${ENDPOINT_NAME}
+model: azureml://registries/${REGISTRY_NAME}/models/${MODEL_NAME}/versions/${MODEL_VERSION}
+environment: azureml://registries/${REGISTRY_NAME}/environments/enterprise-mlops-runtime/versions/${ASSET_VERSION}
+code_configuration:
+  code: ../../src
+  scoring_script: mlops_reference/score.py
+instance_type: Standard_DS3_v2
+instance_count: 1

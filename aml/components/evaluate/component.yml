@@ -1,0 +1,17 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: evaluate
+display_name: Evaluate classifier
+type: command
+version: 1
+inputs:
+  prepared_data: {type: uri_folder}
+  model: {type: mlflow_model}
+outputs:
+  metrics: {type: uri_folder}
+code: ../../../
+environment: azureml://registries/${REGISTRY_NAME}/environments/enterprise-mlops-runtime/versions/${ASSET_VERSION}
+command: >-
+  env PYTHONPATH=src python scripts/evaluate.py
+  --model-dir ${{inputs.model}}
+  --test-csv ${{inputs.prepared_data}}/test.csv
+  --metrics-dir ${{outputs.metrics}}

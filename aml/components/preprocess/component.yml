@@ -1,0 +1,15 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: preprocess
+display_name: Prepare sample data
+type: command
+version: 1
+inputs:
+  test_size: {type: number, default: 0.2}
+outputs:
+  prepared_data: {type: uri_folder}
+code: ../../../
+environment: azureml://registries/${REGISTRY_NAME}/environments/enterprise-mlops-runtime/versions/${ASSET_VERSION}
+command: >-
+  env PYTHONPATH=src python scripts/preprocess.py
+  --output-dir ${{outputs.prepared_data}}
+  --test-size ${{inputs.test_size}}

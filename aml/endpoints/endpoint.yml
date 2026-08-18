@@ -1,0 +1,4 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineEndpoint.schema.json
+name: ${ENDPOINT_NAME}
+auth_mode: key
+description: Enterprise MLOps reference endpoint

@@ -1,0 +1,10 @@
+parameters:
+  serviceConnection: ''
+steps:
+  - task: AzureCLI@2
+    displayName: Install Azure ML CLI extension
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: az extension add --name ml --upgrade --yes

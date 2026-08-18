@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "azureml-enterprise-mlops-reference"
+version = "0.1.0"
+description = "Enterprise Azure Machine Learning MLOps reference implementation"
+requires-python = ">=3.10"
+dependencies = [
+  "azure-ai-ml>=1.24,<2",
+  "azure-identity>=1.17,<2",
+  "mlflow>=2.17,<3",
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
+  "scikit-learn>=1.5,<2",
+]
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "pytest>=8.3", "pytest-cov>=5", "ruff>=0.8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=mlops_reference --cov-report=term-missing --cov-fail-under=80"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
