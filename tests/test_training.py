@@ -19,7 +19,7 @@ def test_train_model_saves_mlflow_model_and_metadata(tmp_path, monkeypatch):
     ).to_csv(train_csv, index=False)
     saved = {}
     monkeypatch.setattr(
-        "mlops_reference.train.mlflow.sklearn.save_model",
+        "mlops_reference.train.save_model",
         lambda model, path: saved.update(model=model, path=path),
     )
     result = train_model(str(train_csv), str(model_dir), seed=7)

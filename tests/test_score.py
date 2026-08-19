@@ -17,6 +17,6 @@ def test_run_returns_json_safe_predictions():
 def test_init_loads_model_from_azureml_directory(monkeypatch):
     fake_model = FakeModel()
     monkeypatch.setenv("AZUREML_MODEL_DIR", "/models/iris")
-    monkeypatch.setattr(score.mlflow.pyfunc, "load_model", lambda path: fake_model)
+    monkeypatch.setattr(score, "load_model", lambda path: fake_model)
     score.init()
     assert score.model is fake_model
