@@ -1,6 +1,6 @@
 import json
 
-import mlops_reference.score as score
+from mlops_reference import score
 
 
 class FakeModel:

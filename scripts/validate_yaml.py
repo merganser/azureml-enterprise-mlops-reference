@@ -4,7 +4,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import yaml
-
 from render_aml import render
 
 
@@ -24,6 +23,8 @@ def main() -> None:
         "COMPUTE_NAME=cpu-cluster",
         "CONTAINER_IMAGE=example.azurecr.io/mlops:abc123",
         "ENDPOINT_NAME=iris-test",
+        "ENVIRONMENT_NAME=enterprise-mlops-runtime",
+        "ENVIRONMENT_VERSION=1.0.123",
         "MODEL_NAME=iris-classifier",
         "MODEL_VERSION=1.0.123",
         "REGISTRY_NAME=example-registry",

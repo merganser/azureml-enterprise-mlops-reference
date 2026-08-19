@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from scripts.render_aml import render
