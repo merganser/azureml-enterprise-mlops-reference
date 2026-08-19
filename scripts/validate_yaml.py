@@ -6,7 +6,6 @@ from tempfile import TemporaryDirectory
 import yaml
 from render_aml import render
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
