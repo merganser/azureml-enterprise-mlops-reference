@@ -14,9 +14,14 @@ def render(source: str, output: str, replacements: list[str]) -> None:
     Path(output).write_text(content, encoding="utf-8")
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("source")
-parser.add_argument("output")
-parser.add_argument("values", nargs="*")
-args = parser.parse_args()
-render(args.source, args.output, args.values)
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source")
+    parser.add_argument("output")
+    parser.add_argument("values", nargs="*")
+    args = parser.parse_args()
+    render(args.source, args.output, args.values)
+
+
+if __name__ == "__main__":
+    main()

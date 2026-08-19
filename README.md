@@ -1,5 +1,8 @@
 # Azure ML Enterprise MLOps Reference
 
+[![CI](https://github.com/merganser/azureml-enterprise-mlops-reference/actions/workflows/ci.yml/badge.svg)](https://github.com/merganser/azureml-enterprise-mlops-reference/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/merganser/azureml-enterprise-mlops-reference/actions/workflows/codeql.yml/badge.svg)](https://github.com/merganser/azureml-enterprise-mlops-reference/actions/workflows/codeql.yml)
+
 An enterprise reference implementation for Azure Machine Learning with separate CI, Dev, Test, and Prod Azure DevOps pipelines, Snyk security gates, a shared Azure ML registry, managed online endpoints, and immutable asset promotion.
 
 ## Promotion model
@@ -24,6 +27,10 @@ tests/               Unit tests
 ```
 
 Start with [the architecture](docs/architecture.md) and then follow [the setup guide](docs/setup.md).
+
+## GitHub validation
+
+Every pull request and push to `main` runs Python linting, unit tests on Python 3.10–3.12, package build/install checks, YAML and rendered Azure ML template validation, and a production Docker image build. CodeQL and dependency review provide additional security checks. Azure-connected integration tests, Snyk gates, asset registration, and deployments remain in Azure DevOps because they require protected Azure service connections and environments.
 
 ## Important production choices
 
