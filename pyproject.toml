@@ -10,7 +10,6 @@ requires-python = ">=3.10"
 dependencies = [
   "azure-ai-ml>=1.24,<2",
   "azure-identity>=1.17,<2",
-  "cryptography>=50,<51",
   "mlflow>=3.15,<4",
   "numpy>=1.26,<3",
   "pandas>=2.2,<3",

@@ -30,4 +30,6 @@ jobs:
           python -m pip install --upgrade pip 'setuptools>=83' &&
           pip install . pip-audit
       - name: Audit dependencies
-        run: pip-audit --skip-editable
+        # MLflow 3.15.x requires cryptography<50; remove this exception when
+        # MLflow supports cryptography 50, which fixes PYSEC-2026-3552.
+        run: pip-audit --skip-editable --ignore-vuln PYSEC-2026-3552
