@@ -34,7 +34,7 @@ def test_evaluate_model_writes_accuracy(tmp_path, monkeypatch):
     metrics_dir = tmp_path / "metrics"
     pd.DataFrame({"feature": [1, 2, 3], "label": [0, 0, 1]}).to_csv(test_csv, index=False)
     monkeypatch.setattr(
-        "mlops_reference.evaluate.mlflow.sklearn.load_model", lambda path: PredictZeros()
+        "mlops_reference.evaluate.load_model", lambda path: PredictZeros()
     )
     accuracy = evaluate_model("model", str(test_csv), str(metrics_dir))
     metrics = json.loads((metrics_dir / "metrics.json").read_text(encoding="utf-8"))
